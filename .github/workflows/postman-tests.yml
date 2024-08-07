@@ -27,7 +27,7 @@ jobs:
 
     - name: Run Postman collection
       run: |
-        newman run collection.json           --reporters cli,junit           --reporter-junit-export ./newman/results.xml
+        newman run test-collection.json           --reporters cli,junit           --reporter-junit-export ./newman/results.xml
 
     - name: Upload Test Results
       uses: actions/upload-artifact@v3
