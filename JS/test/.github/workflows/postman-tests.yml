@@ -1,0 +1,34 @@
+
+    
+name: Run Postman Collection
+
+on: [push]
+
+jobs:
+    run-postman-collection:
+        runs-on: ubuntu-latest
+
+        steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: List Content
+          run: |
+            echo "Check Collection"
+            ls -la  
+            echo "install dependencies"
+            npm i -g newman newman-reporter-htmlextra
+            echo "check dependencies version"
+            newman --version
+            newman-reporter-htmlextra --version
+
+        - name: Run Postman collection
+          run: |
+            echo "run test"
+            newman run test-collection.json --reporters cli,junit --reporter-junit-export ./newman/results.xml
+
+        - name: Upload Test Results
+          uses: actions/upload-artifact@v3
+          with:
+            name: postman-test-results
+            path: ./newman/results.xml
