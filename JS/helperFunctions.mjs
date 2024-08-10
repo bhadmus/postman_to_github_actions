@@ -43,14 +43,49 @@ export function createAndInstallPackageJson(dirPath, dependencies) {
  * @param {string} collectionFilePath - Path to the Postman collection JSON file.
  * @param {string} outputYamlFilePath - Path where the YAML file should be saved.
  */
-// const githubDir = path.join(process.cwd(), ".github", "workflows");
-// fs.ensureDir(githubDir)
-// const outputYamlFilePath = path.join(githubDir, "postman-tests.yml");
-export function generateGithubActionsYaml(collectionFilePath, outputYamlFilePath) {
+export function generateGithubActionsYaml(collectionFilePath, environmentFilePath, outputYamlFilePath) {
     const outputDir = path.dirname(outputYamlFilePath);
     fs.ensureDirSync(outputDir);
     let yamlFileContent;
-const yamlContent = `
+    if(!environmentFilePath){
+    yamlFileContent = `
+    
+name: Run Postman Collection
+
+on: [push]
+
+jobs:
+    run-postman-collection:
+        runs-on: ubuntu-latest
+
+        steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: List Content
+          run: |
+            echo "Check Collection"
+            ls -la  
+            echo "install dependencies"
+            npm i -g newman newman-reporter-htmlextra
+            echo "check dependencies version"
+            newman --version
+            newman-reporter-htmlextra --version
+
+        - name: Run Postman collection
+          run: |
+            echo "run test"
+            newman run ${collectionFilePath} --reporters cli,junit --reporter-junit-export ./newman/results.xml
+
+        - name: Upload Test Results
+          uses: actions/upload-artifact@v3
+          with:
+            name: postman-test-results
+            path: ./newman/results.xml
+`;
+
+    }else{
+        yamlFileContent = `
 
 name: Run Postman Collection
 
@@ -75,10 +110,9 @@ jobs:
             newman-reporter-htmlextra --version
 
         - name: Run Postman collection
-          continue-on-error: true
           run: |
             echo "run test"
-            newman run ${collectionFilePath} --reporters cli,junit --reporter-junit-export ./newman/results.xml
+            newman run ${collectionFilePath} -e ${environmentFilePath} --reporters cli,junit --reporter-junit-export ./newman/results.xml
 
         - name: Upload Test Results
           uses: actions/upload-artifact@v3
@@ -86,9 +120,10 @@ jobs:
             name: postman-test-results
             path: ./newman/results.xml
 `;
+    }
 
     console.log(`Generating GitHub Actions YAML file at ${outputYamlFilePath} successfully`);
-    fs.writeFileSync(outputYamlFilePath, yamlContent, 'utf8');
+    fs.writeFileSync(outputYamlFilePath, yamlFileContent, 'utf8');
     console.log('YAML file generated successfully.');
 }
 
@@ -225,19 +260,19 @@ export async function exportPostmanCollection(apiKey, collectionId, outputFilePa
 export async function exportPostmanEnvironment(apiKey, environmentId, outputFilePath) {
     try {
         console.log(`Exporting Postman collection ${environmentId} to ${outputFilePath}`);
-        const response = await fetch(`https://api.getpostman.com/collections/${environmentId}`, {
+        const response = await fetch(`https://api.getpostman.com/environments/${environmentId}`, {
             headers: {
                 'X-Api-Key': apiKey,
             }
         });
         const data = await response.json();
         if (!response.ok) {
-            throw new Error(`Failed to export Postman collection: ${data.error}`);
+            throw new Error(`Failed to export Postman environment: ${data.error}`);
         }
         fs.writeFileSync(outputFilePath, JSON.stringify(data, null, 2), 'utf8');
-        console.log('Postman collection exported successfully.');
+        console.log('Postman environment exported successfully.');
     } catch (error) {
-        console.error('An error occurred while exporting the Postman collection:', error.message);
+        console.error('An error occurred while exporting the Postman environment:', error.message);
         throw error;
     }
 }
@@ -358,6 +393,3 @@ export async function readmeExists(token, repoFullName) {
         throw error;
     }
 }
-
-
-

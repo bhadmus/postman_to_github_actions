@@ -13,7 +13,8 @@ import {
   verifyGithubActionsWorkflow,
   initializeRepoWithReadme,
   readmeExists,
-  createAndInstallPackageJson
+  createAndInstallPackageJson,
+  exportPostmanEnvironment,
 } from "./helperFunctions.mjs";
 
 // Load environment variables
@@ -37,6 +38,14 @@ async function main() {
       );
     }
 
+    // Check if the collection requires an environment
+    const { environmentRequired } = await inquirer.prompt({
+      type: "confirm",
+      name: "environmentRequired",
+      message: "Does the Postman collection need an environment?",
+      default: false,
+    });
+
     // Ask if the Postman collection is from UID or file
     const { collectionSource } = await inquirer.prompt({
       type: "list",
@@ -47,43 +56,179 @@ async function main() {
     });
 
     let collectionFilePath;
-    if (collectionSource === "UID") {
-      let postmanApiKey = process.env.POSTMAN_API_KEY;
-      if (!postmanApiKey) {
-        const { apiKey } = await inquirer.prompt({
+    let environmentFilePath;
+    if (!environmentRequired) {
+      if (collectionSource === "UID") {
+        let postmanApiKey = process.env.POSTMAN_API_KEY;
+        if (!postmanApiKey) {
+          const { apiKey } = await inquirer.prompt({
+            type: "input",
+            name: "apiKey",
+            message: "Enter your Postman API key:",
+          });
+          postmanApiKey = apiKey;
+          process.env.POSTMAN_API_KEY = postmanApiKey;
+          fs.appendFileSync(
+            path.join(process.env.HOME, ".bashrc"),
+            `\nexport POSTMAN_API_KEY=${postmanApiKey}\n`
+          );
+        }
+        const { collectionId } = await inquirer.prompt({
           type: "input",
-          name: "apiKey",
-          message: "Enter your Postman API key:",
+          name: "collectionId",
+          message: "Enter the Postman collection ID:",
         });
-        postmanApiKey = apiKey;
-        process.env.POSTMAN_API_KEY = postmanApiKey;
-        fs.appendFileSync(
-          path.join(process.env.HOME, ".bashrc"),
-          `\nexport POSTMAN_API_KEY=${postmanApiKey}\n`
+        collectionFilePath = "collection.json";
+        await exportPostmanCollection(
+          postmanApiKey,
+          collectionId,
+          collectionFilePath
         );
+      } else if (collectionSource === "filepath") {
+        const { filePath } = await inquirer.prompt({
+          type: "input",
+          name: "filePath",
+          message: "Enter the path to the Postman collection JSON file:",
+        });
+        collectionFilePath = filePath;
+      } else {
+        console.log("Invalid option. Exiting.");
+        return;
       }
-      const { collectionId } = await inquirer.prompt({
-        type: "input",
-        name: "collectionId",
-        message: "Enter the Postman collection ID:",
-      });
-      collectionFilePath = "collection.json";
-      await exportPostmanCollection(
-        postmanApiKey,
-        collectionId,
-        collectionFilePath
-      );
-    } else if (collectionSource === "filepath") {
-      const { filePath } = await inquirer.prompt({
-        type: "input",
-        name: "filePath",
-        message: "Enter the path to the Postman collection JSON file:",
-      });
-      collectionFilePath = filePath;
     } else {
-      console.log("Invalid option. Exiting.");
-      return;
+      // Ask if the Postman environment is from UID or file
+      const { environmentSource } = await inquirer.prompt({
+        type: "list",
+        name: "environmentSource",
+        message: "Is the Postman environment from UID or filepath?",
+        choices: ["UID", "filepath"],
+        default: "UID",
+      });
+      if (environmentSource === "UID" && collectionSource === "UID") {
+        let postmanApiKey = process.env.POSTMAN_API_KEY;
+        if (!postmanApiKey) {
+          const { apiKey } = await inquirer.prompt({
+            type: "input",
+            name: "apiKey",
+            message: "Enter your Postman API key:",
+          });
+          postmanApiKey = apiKey;
+          process.env.POSTMAN_API_KEY = postmanApiKey;
+          fs.appendFileSync(
+            path.join(process.env.HOME, ".bashrc"),
+            `\nexport POSTMAN_API_KEY=${postmanApiKey}\n`
+          );
+        }
+        const { collectionId } = await inquirer.prompt({
+          type: "input",
+          name: "collectionId",
+          message: "Enter the Postman collection ID:",
+        });
+        collectionFilePath = "collection.json";
+        const { environmentId } = await inquirer.prompt({
+          type: "input",
+          name: "environmentId",
+          message: "Enter the Postman environment ID:",
+        });
+        environmentFilePath = "environment.json";
+        await exportPostmanCollection(
+          postmanApiKey,
+          collectionId,
+          collectionFilePath
+        );
+        await exportPostmanEnvironment(
+          postmanApiKey,
+          environmentId,
+          environmentFilePath
+        );
+      } else if (environmentSource === "filepath" && collectionSource === "filepath"){
+        const { filePath } = await inquirer.prompt({
+          type: "input",
+          name: "filePath",
+          message: "Enter the path to the Postman collection JSON file:",
+        });
+        collectionFilePath = filePath;
+        const { envPath } = await inquirer.prompt({
+          type: "input",
+          name: "envPath",
+          message: "Enter the path to the Postman environment JSON file:",
+        });
+        environmentFilePath = envPath;
+
+      }else if (environmentSource === "filepath" && collectionSource === "UID"){
+        let postmanApiKey = process.env.POSTMAN_API_KEY;
+        if (!postmanApiKey) {
+          const { apiKey } = await inquirer.prompt({
+            type: "input",
+            name: "apiKey",
+            message: "Enter your Postman API key:",
+          });
+          postmanApiKey = apiKey;
+          process.env.POSTMAN_API_KEY = postmanApiKey;
+          fs.appendFileSync(
+            path.join(process.env.HOME, ".bashrc"),
+            `\nexport POSTMAN_API_KEY=${postmanApiKey}\n`
+          );
+        }
+        const { collectionId } = await inquirer.prompt({
+          type: "input",
+          name: "collectionId",
+          message: "Enter the Postman collection ID:",
+        });
+        collectionFilePath = "collection.json";
+        const { envPath } = await inquirer.prompt({
+          type: "input",
+          name: "envPath",
+          message: "Enter the path to the Postman environment JSON file:",
+        });
+        environmentFilePath = envPath;
+        await exportPostmanCollection(
+          postmanApiKey,
+          collectionId,
+          collectionFilePath
+        );
+
+      }else if (environmentSource === "UID" && collectionSource === "filepath"){
+        let postmanApiKey = process.env.POSTMAN_API_KEY;
+        if (!postmanApiKey) {
+          const { apiKey } = await inquirer.prompt({
+            type: "input",
+            name: "apiKey",
+            message: "Enter your Postman API key:",
+          });
+          postmanApiKey = apiKey;
+          process.env.POSTMAN_API_KEY = postmanApiKey;
+          fs.appendFileSync(
+            path.join(process.env.HOME, ".bashrc"),
+            `\nexport POSTMAN_API_KEY=${postmanApiKey}\n`
+          );
+        }
+        const { filePath } = await inquirer.prompt({
+          type: "input",
+          name: "filePath",
+          message: "Enter the path to the Postman collection JSON file:",
+        });
+        collectionFilePath = filePath;
+        const { environmentId } = await inquirer.prompt({
+          type: "input",
+          name: "environmentId",
+          message: "Enter the Postman environment ID:",
+        });
+        environmentFilePath = "environment.json";
+        await exportPostmanEnvironment(
+          postmanApiKey,
+          environmentId,
+          environmentFilePath
+        );
+
+      }
     }
+
+/**
+ * CONTINUE LATER TODAY WITH THE FOLLOWING:
+ * ENV=FILEPATH && COL=UID.
+ * ENV=UID && COL=FILEPATH
+ */
 
     // Verify if collection.json file is created and exists locally
     if (!fs.existsSync(collectionFilePath)) {
@@ -138,7 +283,11 @@ async function main() {
     const githubDir = path.join(process.cwd(), ".github", "workflows");
     fs.ensureDirSync(githubDir); // Ensure the directory exists
     const outputYamlFilePath = path.join(githubDir, "postman-tests.yml");
-    generateGithubActionsYaml(collectionFilePath, outputYamlFilePath);
+    generateGithubActionsYaml(
+      collectionFilePath,
+      environmentFilePath,
+      outputYamlFilePath
+    );
 
     // Verify if the YAML file is created and exists locally
     if (!fs.existsSync(outputYamlFilePath)) {
@@ -150,12 +299,32 @@ async function main() {
     createAndInstallPackageJson(projectDir, { collectionFilePath });
 
     // Verify if package.json and package-lock.json are created and exist locally
-    if (!fs.existsSync(path.join(projectDir, 'package.json')) || !fs.existsSync(path.join(projectDir, 'package-lock.json'))) {
+    if (
+      !fs.existsSync(path.join(projectDir, "package.json")) ||
+      !fs.existsSync(path.join(projectDir, "package-lock.json"))
+    ) {
       throw new Error("package.json or package-lock.json not found. Exiting.");
     }
 
     // Commit changes to the repository
-    const commitFiles = [outputYamlFilePath, collectionFilePath, path.join(projectDir, 'package.json'), path.join(projectDir, 'package-lock.json')];
+    let commitFiles;
+    if(environmentFilePath){
+      commitFiles = [
+      outputYamlFilePath,
+      collectionFilePath,
+      environmentFilePath,
+      path.join(projectDir, "package.json"),
+      path.join(projectDir, "package-lock.json"),
+    ];
+
+    }else{
+      commitFiles = [
+        outputYamlFilePath,
+        collectionFilePath,
+        path.join(projectDir, "package.json"),
+        path.join(projectDir, "package-lock.json"),
+      ];
+    }
     const commitMessage = "Create Pipeline Config";
     await makeCommit(githubToken, repoFullName, commitFiles, commitMessage);
 
