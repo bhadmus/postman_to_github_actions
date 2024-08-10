@@ -1,11 +1,11 @@
 {
-  "name": "js",
+  "name": "postman-commit",
   "version": "1.0.0",
   "type": "module",
   "description": "",
   "main": "index.js",
   "bin": {
-    "post-up": "main.mjs"
+    "postman-commit": "main.mjs"
   },
   "scripts": {
     "test": "post-up"
