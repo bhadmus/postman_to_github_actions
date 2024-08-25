@@ -99,6 +99,7 @@ jobs:
         POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
       run: |
         cd python
+        ls
         python -c "from helper_functions import export_postman_collection; export_postman_collection('${{ secrets.POSTMAN_API_KEY }}', '${{ secrets.TEST_COLLECTION_ID }}', 'test_collection.json')"
         if [ ! -f "test_collection.json" ]; then
           echo "Postman collection not exported"
@@ -131,6 +132,7 @@ jobs:
     - name: Test invalid template file
       run: |
         cd python
+        ls
         if python main.py --local --template nonexistent_template.yml <<EOF
         2
         test_collection.json
