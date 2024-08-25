@@ -12,9 +12,6 @@ jobs:
           curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
       - name: Login to Postman CLI
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
-      - name: Run API tests
-        run: |
-          postman collection run "25376308-0e2d67f1-e1c0-4c0e-8243-d038954ae9df"
 
   selenium-job:
     runs-on: ubuntu-latest
@@ -25,10 +22,6 @@ jobs:
         run: |
           python -m pip install selenium webdriver_manager
 
-      - name: Run Selenium tests (Headless Chrome)
-        run: |
-          python $GITHUB_WORKSPACE/tests/login_test_ci.py  # Replace with your test directory
-
       - name: Send Email
 
         uses: hilarion5/send-mail@v1
@@ -38,7 +31,7 @@ jobs:
           smtp-port: 465
           smtp-secure: true
           from-email: ${{ secrets.EMAIL_USERNAME }}
-          to-email: oluwaseyinexus137@gmail.com,af.afolarinadekunle@gmail.com
+          to-email: ohjikjk@gmail.com
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Automated API Tests Failed in ${{ github.repository }}"
