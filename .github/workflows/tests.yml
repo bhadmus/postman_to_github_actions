@@ -59,7 +59,7 @@ jobs:
         pip install requests pyyaml
     - name: Test GitHub setup with new repo
       env:
-        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
       run: |
         cd python
