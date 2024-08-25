@@ -24,7 +24,7 @@ jobs:
         cd python
         python main.py --local <<EOF
         2
-        test_collection.json
+        test-collection.json
         EOF
         if [ ! -f "../.github/workflows/postman-tests.yml" ]; then
           echo "postman-tests.yml not created"
@@ -36,7 +36,7 @@ jobs:
         echo "name: Custom Template" > custom_template.yml
         python main.py --local --template custom_template.yml <<EOF
         2
-        test_collection.json
+        test-collection.json
         EOF
         if ! grep -q "Custom Template" "../.github/workflows/postman-tests.yml"; then
           echo "Custom template not used"
@@ -63,7 +63,7 @@ jobs:
         cd python
         python main.py <<EOF
         2
-        test_collection.json
+        test-collection.json
         2
         test-repo-${{ github.run_id }}
         EOF
