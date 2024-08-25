@@ -22,6 +22,7 @@ jobs:
     - name: Test local setup without template
       run: |
         cd python
+        ls
         python main.py --local <<EOF
         2
         test-collection.json
@@ -33,6 +34,7 @@ jobs:
     - name: Test local setup with template
       run: |
         cd python
+        ls
         echo "name: Custom Template" > custom_template.yml
         python main.py --local --template custom_template.yml <<EOF
         2
