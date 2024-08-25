@@ -1,0 +1,141 @@
+name: Test PostmanxGithub Action Automatic Sync
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-local-setup:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+    - name: Test local setup without template
+      run: |
+        cd python
+        python main.py --local <<EOF
+        2
+        test_collection.json
+        EOF
+        if [ ! -f "../.github/workflows/postman-tests.yml" ]; then
+          echo "postman-tests.yml not created"
+          exit 1
+        fi
+    - name: Test local setup with template
+      run: |
+        cd python
+        echo "name: Custom Template" > custom_template.yml
+        python main.py --local --template custom_template.yml <<EOF
+        2
+        test_collection.json
+        EOF
+        if ! grep -q "Custom Template" "../.github/workflows/postman-tests.yml"; then
+          echo "Custom template not used"
+          exit 1
+        fi
+
+  test-github-setup:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+    - name: Test GitHub setup with new repo
+      env:
+        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+      run: |
+        cd python
+        python main.py <<EOF
+        2
+        test_collection.json
+        2
+        test-repo-${{ github.run_id }}
+        EOF
+    - name: Verify new repo
+      env:
+        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+      run: |
+        if ! gh repo view ${{ github.repository_owner }}/test-repo-${{ github.run_id }}; then
+          echo "New repository not created"
+          exit 1
+        fi
+    - name: Cleanup test repo
+      if: always()
+      env:
+        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+      run: |
+        gh repo delete ${{ github.repository_owner }}/test-repo-${{ github.run_id }} --yes
+
+  test-postman-integration:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+    - name: Test Postman collection export
+      env:
+        POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+      run: |
+        cd python
+        python -c "from helper_functions import export_postman_collection; export_postman_collection('${{ secrets.POSTMAN_API_KEY }}', '${{ secrets.TEST_COLLECTION_ID }}', 'test_collection.json')"
+        if [ ! -f "test_collection.json" ]; then
+          echo "Postman collection not exported"
+          exit 1
+        fi
+
+  test-error-handling:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+    - name: Test invalid Postman collection file
+      run: |
+        cd python
+        if python main.py --local <<EOF
+        2
+        nonexistent_file.json
+        EOF
+        then
+          echo "Script did not handle nonexistent file correctly"
+          exit 1
+        fi
+    - name: Test invalid template file
+      run: |
+        cd python
+        if python main.py --local --template nonexistent_template.yml <<EOF
+        2
+        test_collection.json
+        EOF
+        then
+          echo "Script did not handle nonexistent template correctly"
+          exit 1
+        fi
