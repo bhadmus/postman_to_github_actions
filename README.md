@@ -1,137 +1,137 @@
 # PostmanxGithub Action Automatic Sync
 
-This repository provides a script to automate the process of adding a Postman collection to a GitHub Actions workflow. The script supports both existing and new repositories and allows users to use a custom YAML template for the GitHub Actions workflow.
+This script automates the process of setting up GitHub Actions workflows for Postman collections. It supports both GitHub repository integration and local workflow setup, allowing for flexible usage in various scenarios.
 
 ## Features
 
-- Export Postman collections using a UID or from a local file.
-- Automatically add the Postman collection to a GitHub repository.
-- Create or update GitHub Actions workflows.
-- Use a custom YAML template for the GitHub Actions workflow.
-- Supports both new and existing repositories.
+- Export Postman collections using a UID or from a local file
+- Add Postman collections to GitHub repositories (new or existing)
+- Create or update GitHub Actions workflows
+- Set up workflows locally without GitHub interaction
+- Use custom YAML templates for GitHub Actions workflows
+- Support for both new and existing repositories
 
 ## Prerequisites
 
 - Python 3.x
-- GitHub personal access token
+- GitHub personal access token (for GitHub repository operations)
 - Postman API key (if exporting collection by UID)
-- There is a test collection to try it out for yourself
-
-### Getting Your GitHub Personal Access Token
-
-1. Go to [GitHub Settings](https://github.com/settings/tokens).
-2. Click **Generate new token**.
-3. Select the scopes you need (at least `repo` and `workflow`).
-4. Click **Generate token**.
-5. Copy the token and save it securely. You will need it to run the script.
-
-### Getting Your Postman API Key
-
-1. Go to [Postman API Keys](https://go.postman.co/settings/me/api-keys).
-2. Click **Generate API Key**.
-3. Enter a name for your key and click **Generate API Key**.
-4. Copy the key and save it securely. You will need it to export collections by UID.
-
-### Exporting Tokens to Environment Variables
-
-To make the tokens available to the script, you should export them to your environment variables. This can be done by adding the following lines to your shell configuration file (e.g., `~/.bashrc` or `~/.zshrc`).
-
-#### For Bash
-
-```bash
-export GITHUB_TOKEN=your_github_token_here
-export POSTMAN_API_KEY=your_postman_api_key_here
-```
-
-After adding these lines, source the file to update your environment variables:
-
-```bash
-source ~/.bashrc
-```
-
-#### For Zsh
-
-```bash
-export GITHUB_TOKEN=your_github_token_here
-export POSTMAN_API_KEY=your_postman_api_key_here
-```
-
-After adding these lines, source the file to update your environment variables:
-
-```bash
-source ~/.zshrc
-```
+- `requests` Python package
 
 ## Installation
 
 1. Clone this repository:
-
    ```bash
    git clone https://github.com/BlazinArtemis/project-work.git
    cd project-work
    ```
 
-2. Install the required Python packages:
-
+2. Install the required Python package:
    ```bash
-   pip install requests argparse
+   pip install requests
    ```
 
 ## Usage
 
-### Basic Usage
+The script can be used in several ways:
 
-To run the script and add a Postman collection to a GitHub Actions workflow, use the following command:
-
-```bash
-python main.py
-```
-
-### Using a Custom YAML Template
-
-To use a custom YAML template for the GitHub Actions workflow, use the `--template` argument:
-
-```bash
-python main.py --template path/to/template.yml
-```
-
-**Note**: If using a custom template and exporting the collection by UID, ensure that the collection is saved as `collection.json`. If using a file, ensure the file name matches the template.
-
-### Options
-
-- **GitHub Token**: The script will check for the GitHub token in the environment variable `GITHUB_TOKEN`. If not found, it will prompt you to enter it and save it to your environment.
-
-- **Postman Collection Source**: You can choose to export the Postman collection using a UID or from a local file. If using a file, move the file to the directory from which you are running the script, and ensure the path does not start with `/`.
-
-- **Repository Type**: The script supports both new and existing repositories.
-
-### Example
-
-1. **Run the Script**:
-
+1. **Standard GitHub Repository Setup**:
    ```bash
-   python main.py --template my-custom-template.yml
+   python main.py
    ```
+   This guides you through setting up a GitHub Actions workflow for a Postman collection in a GitHub repository (new or existing).
 
-2. **Follow the Prompts**:
-   - Enter your GitHub token.
-   - Choose the Postman collection source (UID or file).
-   - If using a UID, enter the Postman API key and the collection ID.
-   - If using a file, enter the path to the Postman collection JSON file.
-   - Choose whether to use an existing or new GitHub repository.
-   - If using an existing repository, enter the repository name (e.g., `username/repo`).
-   - If using a new repository, enter the repository name, and the script will create it for you.
+2. **Local Workflow Setup**:
+   ```bash
+   python main.py --local
+   ```
+   This sets up the workflow files locally without interacting with GitHub.
+
+3. **GitHub Repository Setup with Custom Template**:
+   ```bash
+   python main.py --template path/to/template.yml
+   ```
+   This sets up a GitHub Actions workflow using a custom YAML template.
+
+4. **Local Workflow Setup with Custom Template**:
+   ```bash
+   python main.py --local --template path/to/template.yml
+   ```
+   This creates a local workflow setup using a custom YAML template.
+
+For each option, you can choose between:
+- Using a Postman collection from a UID (requires Postman API key)
+- Using a Postman collection from a local JSON file
+
+For GitHub repository options, you can choose between:
+- Using an existing GitHub repository
+- Creating a new GitHub repository
+
+## Detailed Usage Instructions
+
+### GitHub Token
+
+The script checks for the GitHub token in the environment variable `GITHUB_TOKEN`. If not found, it prompts you to enter it and saves it to your environment.
+
+To set the token manually:
+```bash
+export GITHUB_TOKEN=your_github_token_here
+```
+
+### Postman API Key
+
+For UID-based collection export, the script checks for the Postman API key in the environment variable `POSTMAN_API_KEY`. If not found, it prompts you to enter it.
+
+To set the key manually:
+```bash
+export POSTMAN_API_KEY=your_postman_api_key_here
+```
+
+### Workflow Process
+
+1. Choose between UID or file-based Postman collection.
+2. For GitHub repository setup:
+   - Choose between existing or new repository.
+   - For existing repos, enter the full repository name (e.g., "username/repo").
+   - For new repos, enter the desired repository name.
+3. The script will generate or modify the GitHub Actions workflow YAML file.
+4. For GitHub setups, changes are committed and pushed to the repository.
+5. For local setups, files are created in the current directory.
+
+## Examples
+
+1. **Setting up a workflow in a GitHub repository**:
+   ```bash
+   python main.py
+   ```
+   Follow the prompts to choose between UID/file, existing/new repo, etc.
+
+2. **Setting up a local workflow**:
+   ```bash
+   python main.py --local
+   ```
+   This will create the necessary files in your current directory.
+
+3. **Using a custom template for GitHub setup**:
+   ```bash
+   python main.py --template my_template.yml
+   ```
+   This will use your custom template for the GitHub Actions workflow.
+
+4. **Local setup with a custom template**:
+   ```bash
+   python main.py --local --template my_template.yml
+   ```
+   This creates a local setup using your custom template.
 
 ## Contributing
 
-Contributions are welcome! Please fork the repository and use a feature branch. Pull requests are warmly welcome.
+Contributions are welcome! Please fork the repository and create a pull request with your features or fixes.
 
 ## License
 
 This project is licensed under the MIT License.
 
-## Contact
+## Support
 
-For any inquiries or issues, please open an issue on the GitHub repository.
-```
-
+For issues, questions, or contributions, please open an issue in the GitHub repository.
