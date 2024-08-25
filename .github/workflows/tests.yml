@@ -40,7 +40,7 @@ jobs:
         2
         test-collection.json
         EOF
-        if ! grep -q "Custom Template" "../.github/workflows/postman-tests.yml"; then
+        if ! grep -q "Custom Template" ".github/workflows/postman-tests.yml"; then
           echo "Custom template not used"
           exit 1
         fi
@@ -126,7 +126,7 @@ jobs:
         if python main.py --local <<EOF
         2
         nonexistent_file.json
-        EOF
+        if ! grep -q "Error" EOF
         then
           echo "Script did not handle nonexistent file correctly"
           exit 1
@@ -138,7 +138,7 @@ jobs:
         if python main.py --local --template nonexistent_template.yml <<EOF
         2
         test_collection.json
-        EOF
+        if ! grep -q "Error" EOF
         then
           echo "Script did not handle nonexistent template correctly"
           exit 1
