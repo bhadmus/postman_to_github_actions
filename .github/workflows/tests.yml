@@ -27,7 +27,7 @@ jobs:
         2
         test-collection.json
         EOF
-        if [ ! -f "../.github/workflows/postman-tests.yml" ]; then
+        if [ ! -f ".github/workflows/postman-tests.yml" ]; then
           echo "postman-tests.yml not created"
           exit 1
         fi
