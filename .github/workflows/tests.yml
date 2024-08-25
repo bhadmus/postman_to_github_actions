@@ -123,9 +123,10 @@ jobs:
     - name: Test invalid Postman collection file
       run: |
         cd python
-        if python main.py --local <<EOF
+        python main.py --local <<EOF
         2
         nonexistent_file.json
+        EOF
         if ! grep -q "Error" EOF
         then
           echo "Script did not handle nonexistent file correctly"
@@ -135,9 +136,10 @@ jobs:
       run: |
         cd python
         ls
-        if python main.py --local --template nonexistent_template.yml <<EOF
+        python main.py --local --template nonexistent_template.yml <<EOF
         2
         test_collection.json
+        EOF
         if ! grep -q "Error" EOF
         then
           echo "Script did not handle nonexistent template correctly"
