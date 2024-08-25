@@ -127,7 +127,7 @@ jobs:
         2
         nonexistent_file.json
         EOF
-        if ! grep -q "Error" EOF
+        if ! cat EOF | grep "Error"
         then
           echo "Script did not handle nonexistent file correctly"
           exit 1
@@ -140,7 +140,7 @@ jobs:
         2
         test_collection.json
         EOF
-        if ! grep -q "Error" EOF
+        if ! cat EOF | grep "Error"
         then
           echo "Script did not handle nonexistent template correctly"
           exit 1
