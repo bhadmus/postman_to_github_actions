@@ -123,25 +123,32 @@ jobs:
     - name: Test invalid Postman collection file
       run: |
         cd python
-        python main.py --local <<EOF
+        output=$(python main.py --local <<EOF
         2
         nonexistent_file.json
         EOF
-        if ! cat EOF | grep "Error"
-        then
-          echo "Script did not handle nonexistent file correctly"
+        )
+        echo "$output"
+        if echo "$output" | grep -q "Error"; then
+          echo "Script correctly handled the error for nonexistent file"
+          exit 0
+        else
+          echo "Script did not handle the nonexistent file error as expected"
           exit 1
         fi
     - name: Test invalid template file
       run: |
         cd python
-        ls
-        python main.py --local --template nonexistent_template.yml <<EOF
+        output=$(python main.py --local --template nonexistent_template.yml <<EOF
         2
         test_collection.json
         EOF
-        if ! cat EOF | grep "Error"
-        then
-          echo "Script did not handle nonexistent template correctly"
+        )
+        echo "$output"
+        if echo "$output" | grep -q "Error"; then
+          echo "Script correctly handled the error for nonexistent template"
+          exit 0
+        else
+          echo "Script did not handle the nonexistent template error as expected"
           exit 1
         fi
