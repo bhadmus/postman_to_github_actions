@@ -102,7 +102,7 @@ jobs:
       run: |
         cd JS
         ls
-        node -e "require('./helper_functions').exportPostmanCollection('${{ secrets.POSTMAN_API_KEY }}', '${{ secrets.TEST_COLLECTION_ID }}', 'test_collection.json')"
+        node -e "require('./helperFunctions').exportPostmanCollection('${{ secrets.POSTMAN_API_KEY }}', '${{ secrets.TEST_COLLECTION_ID }}', 'test_collection.json')"
         if [ ! -f "test_collection.json" ]; then
           echo "Postman collection not exported"
           exit 1
