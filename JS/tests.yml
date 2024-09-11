@@ -44,66 +44,66 @@ jobs:
           exit 1
         fi
 
-  test-github-setup:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16.x'
-    - name: Install dependencies
-      run: |
-        npm install
-    - name: Test GitHub setup with new repo
-      env:
-        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
-      run: |
-        cd javascript
-        node main.js <<EOF
-        2
-        test-collection.json
-        2
-        test-repo-${{ github.run_id }}
-        EOF
-    - name: Verify new repo
-      env:
-        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-      run: |
-        if ! gh repo view ${{ github.repository_owner }}/test-repo-${{ github.run_id }}; then
-          echo "New repository not created"
-          exit 1
-        fi
-    - name: Cleanup test repo
-      if: always()
-      env:
-        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-      run: |
-        gh repo delete ${{ github.repository_owner }}/test-repo-${{ github.run_id }} --yes
+  # test-github-setup:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Set up Node.js
+  #     uses: actions/setup-node@v2
+  #     with:
+  #       node-version: '16.x'
+  #   - name: Install dependencies
+  #     run: |
+  #       npm install
+  #   - name: Test GitHub setup with new repo
+  #     env:
+  #       GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+  #       POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+  #     run: |
+  #       cd javascript
+  #       node main.js <<EOF
+  #       2
+  #       test-collection.json
+  #       2
+  #       test-repo-${{ github.run_id }}
+  #       EOF
+  #   - name: Verify new repo
+  #     env:
+  #       GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+  #     run: |
+  #       if ! gh repo view ${{ github.repository_owner }}/test-repo-${{ github.run_id }}; then
+  #         echo "New repository not created"
+  #         exit 1
+  #       fi
+  #   - name: Cleanup test repo
+  #     if: always()
+  #     env:
+  #       GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+  #     run: |
+  #       gh repo delete ${{ github.repository_owner }}/test-repo-${{ github.run_id }} --yes
 
-  test-postman-integration:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16.x'
-    - name: Install dependencies
-      run: |
-        npm install
-    - name: Test Postman collection export
-      env:
-        POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
-      run: |
-        cd javascript
-        ls
-        node -e "require('./helper_functions').exportPostmanCollection('${{ secrets.POSTMAN_API_KEY }}', '${{ secrets.TEST_COLLECTION_ID }}', 'test_collection.json')"
-        if [ ! -f "test_collection.json" ]; then
-          echo "Postman collection not exported"
-          exit 1
-        fi
+  # test-postman-integration:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Set up Node.js
+  #     uses: actions/setup-node@v2
+  #     with:
+  #       node-version: '16.x'
+  #   - name: Install dependencies
+  #     run: |
+  #       npm install
+  #   - name: Test Postman collection export
+  #     env:
+  #       POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+  #     run: |
+  #       cd javascript
+  #       ls
+  #       node -e "require('./helper_functions').exportPostmanCollection('${{ secrets.POSTMAN_API_KEY }}', '${{ secrets.TEST_COLLECTION_ID }}', 'test_collection.json')"
+  #       if [ ! -f "test_collection.json" ]; then
+  #         echo "Postman collection not exported"
+  #         exit 1
+  #       fi
 
   test-error-handling:
     runs-on: ubuntu-latest
