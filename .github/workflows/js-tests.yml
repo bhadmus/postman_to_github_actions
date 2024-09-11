@@ -1,10 +1,10 @@
-name: Test PostmanxGithub Action Automatic Sync (JavaScript Version)
+name: Test Postman and Github Action Automatic Sync NPM Package
 
 on:
   push:
-    branches: [ js-jest ]
+    branches: [ main ]
   pull_request:
-    branches: [ js-jest ]
+    branches: [ main ]
 
 jobs:
   test-local-setup:
@@ -24,8 +24,11 @@ jobs:
         cd JS
         ls
         node main.mjs --local <<EOF
-        2
+        false
+        filepath
         test-collection.json
+        new
+        test-project
         EOF
         if [ ! -f "../.github/workflows/postman-tests.yml" ]; then
           echo "postman-tests.yml not created"
