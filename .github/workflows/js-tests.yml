@@ -2,9 +2,9 @@ name: Test PostmanxGithub Action Automatic Sync (JavaScript Version)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ js-jest ]
   pull_request:
-    branches: [ main ]
+    branches: [ js-jest ]
 
 jobs:
   test-local-setup:
