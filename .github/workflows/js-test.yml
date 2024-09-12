@@ -32,7 +32,7 @@ jobs:
           POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
           COLLECTION_SOURCE: "UID"
           COLLECTION_ID: ${{ secrets.COLLECTION_ID }}
-          ENVIRONMENT_REQUIRED: "false"
+          ENVIRONMENT_REQUIRED: "no"
           REPO_CHOICE: "new"
           REPO_NAME: "my-new-repo"
 
