@@ -37,7 +37,7 @@ jobs:
           REPO_CHOICE: "new"
           REPO_NAME: "my-new-repo"
 
-        run: node main.mjs
+        run: node JS/main.mjs
 
       - name: Verify GitHub Actions YAML generated
         run: |
