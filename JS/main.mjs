@@ -67,8 +67,13 @@ async function main() {
                 default: false,
               })
               .then(({ environmentRequired }) => environmentRequired));
+          if (environmentRequired === false){
+            promptStep = "postmanApiKey";
 
-          promptStep = "collectionSource";
+          }  else {
+            promptStep = "collectionSource";
+
+          }
           break;
 
         case "collectionSource":
