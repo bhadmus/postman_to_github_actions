@@ -28,7 +28,7 @@ jobs:
 
       - name: Run E2E pipeline script
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
           POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
           COLLECTION_SOURCE: "UID"
           COLLECTION_ID: ${{ secrets.COLLECTION_ID }}
