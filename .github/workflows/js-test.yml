@@ -26,10 +26,6 @@ jobs:
           cd JS
           npm install
 
-      - name: Generate unique repository name
-        id: repo-name
-        run: echo "REPO_NAME=my-new-repo-${{ github.run_id }}-${{ github.job }}" >> $GITHUB_ENV
-
       - name: Run E2E pipeline script
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
@@ -38,7 +34,7 @@ jobs:
           COLLECTION_ID: ${{ secrets.COLLECTION_ID }}
           ENVIRONMENT_REQUIRED: "NO"
           REPO_CHOICE: "new"
-          REPO_NAME: ${{ env.REPO_NAME }}
+          REPO_NAME: "my-new-repo-${{ github.run_id }}"
 
         run: node JS/main.mjs
 
