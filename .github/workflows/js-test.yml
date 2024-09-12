@@ -34,7 +34,7 @@ jobs:
           COLLECTION_ID: ${{ secrets.COLLECTION_ID }}
           ENVIRONMENT_REQUIRED: "NO"
           REPO_CHOICE: "new"
-          REPO_NAME: "my-new-repo"
+          REPO_NAME: "my-new-repo-${{ github.run_id }}"
 
         run: node JS/main.mjs
 
