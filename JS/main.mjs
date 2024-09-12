@@ -61,19 +61,14 @@ async function main() {
             process.env.ENVIRONMENT_REQUIRED ||
             (await inquirer
               .prompt({
-                type: "confirm",
+                type: "list",
                 name: "environmentRequired",
                 message: "Does the Postman collection need an environment?",
-                default: false,
+                choices: ["YES", "NO"],
+                default: "NO",
               })
               .then(({ environmentRequired }) => environmentRequired));
-          if (environmentRequired === false){
-            promptStep = "postmanApiKey";
-
-          }  else {
-            promptStep = "collectionSource";
-
-          }
+          promptStep = "collectionSource";
           break;
 
         case "collectionSource":
@@ -116,104 +111,119 @@ async function main() {
           break;
 
         case "collectionId":
-          // Prompt for Postman Collection ID if UID was selected
-          const collectionId =
-            process.env.COLLECTION_ID ||
-            (await inquirer
-              .prompt({
-                type: "input",
-                name: "collectionId",
-                message: "Enter the Postman collection ID:",
-              })
-              .then(({ collectionId }) => collectionId));
+          if (collectionSource === "UID" && environmentRequired === "NO") {
+            const collectionId =
+              process.env.COLLECTION_ID ||
+              (await inquirer
+                .prompt({
+                  type: "input",
+                  name: "collectionId",
+                  message: "Enter the Postman collection ID:",
+                })
+                .then(({ collectionId }) => collectionId));
 
-          collectionFilePath = "collection.json";
-          await exportPostmanCollection(
-            postmanApiKey,
-            collectionId,
-            collectionFilePath
-          );
-          promptStep = environmentRequired
-            ? "environmentSource"
-            : "verifyCollectionFile";
-          break;
-
-        case "collectionFilePath":
-          // Prompt for Postman Collection Filepath if 'filepath' was selected
-          const { filePath } = await inquirer.prompt({
-            type: "input",
-            name: "filePath",
-            message: "Enter the path to the Postman collection JSON file:",
-          });
-          collectionFilePath = filePath;
-          promptStep = environmentRequired
-            ? "environmentSource"
-            : "verifyCollectionFile";
+            collectionFilePath = "collection.json";
+            await exportPostmanCollection(
+              postmanApiKey,
+              collectionId,
+              collectionFilePath
+            );
+            promptStep = "repoChoice";
+          } else if (collectionSource === "UID" && environmentRequired === "YES"){
+            const collectionId =
+              process.env.COLLECTION_ID ||
+              (await inquirer
+                .prompt({
+                  type: "input",
+                  name: "collectionId",
+                  message: "Enter the Postman collection ID:",
+                })
+                .then(({ collectionId }) => collectionId));
+  
+            collectionFilePath = "collection.json";
+            await exportPostmanCollection(
+              postmanApiKey,
+              collectionId,
+              collectionFilePath
+            );
+            promptStep = 'environmentSource'
+          } else if (collectionSource === "filepath" && environmentRequired === "NO"){
+            // Prompt for Postman Collection Filepath if 'filepath' was selected
+            const { filePath } = await inquirer.prompt({
+              type: "input",
+              name: "filePath",
+              message: "Enter the path to the Postman collection JSON file:",
+            });
+            collectionFilePath = filePath;
+            promptStep = "repoChoice";
+          }else if (collectionSource === "filepath" && environmentRequired === "YES"){
+            // Prompt for Postman Collection Filepath if 'filepath' was selected
+            const { filePath } = await inquirer.prompt({
+              type: "input",
+              name: "filePath",
+              message: "Enter the path to the Postman collection JSON file:",
+            });
+            collectionFilePath = filePath;
+            promptStep = "environmentSource";
+          }
           break;
 
         case "environmentSource":
           // Ask if the Postman environment is from UID or file
-          const { environmentSource } = await inquirer.prompt({
-            type: "list",
-            name: "environmentSource",
-            message: "Is the Postman environment from UID or filepath?",
-            choices: ["UID", "filepath"],
-            default: "UID",
-          });
-          if (environmentSource === "UID") {
-            promptStep = "environmentId";
+          if (environmentRequired === "YES") {
+            const { environmentSource } = await inquirer.prompt({
+              type: "list",
+              name: "environmentSource",
+              message: "Is the Postman environment from UID or filepath?",
+              choices: ["UID", "filepath"],
+              default: "UID",
+            });
+            if (environmentSource === "UID") {
+              const environmentId = await inquirer
+                .prompt({
+                  type: "input",
+                  name: "environmentId",
+                  message: "Enter the Postman environment ID:",
+                })
+                .then(({ environmentId }) => environmentId);
+
+              environmentFilePath = "environment.json";
+              await exportPostmanEnvironment(
+                postmanApiKey,
+                environmentId,
+                environmentFilePath
+              );
+            } else {
+              const { envPath } = await inquirer.prompt({
+                type: "input",
+                name: "envPath",
+                message: "Enter the path to the Postman environment JSON file:",
+              });
+              environmentFilePath = envPath;
+              // Verify if collection file exists
+              if (!fs.existsSync(collectionFilePath)) {
+                throw new Error("Collection file not found. Exiting.");
+              }
+            }
+            promptStep = "repoChoice";
+            break;
           } else {
-            promptStep = "environmentFilePath";
+            promptStep = "repoChoice";
+            break;
           }
-          break;
-
-        case "environmentId":
-          // Prompt for Postman Environment ID if UID was selected
-          const environmentId = await inquirer
-            .prompt({
-              type: "input",
-              name: "environmentId",
-              message: "Enter the Postman environment ID:",
-            })
-            .then(({ environmentId }) => environmentId);
-
-          environmentFilePath = "environment.json";
-          await exportPostmanEnvironment(
-            postmanApiKey,
-            environmentId,
-            environmentFilePath
-          );
-          promptStep = "verifyCollectionFile";
-          break;
-
-        case "environmentFilePath":
-          // Prompt for Postman Environment Filepath if 'filepath' was selected
-          const { envPath } = await inquirer.prompt({
-            type: "input",
-            name: "envPath",
-            message: "Enter the path to the Postman environment JSON file:",
-          });
-          environmentFilePath = envPath;
-          promptStep = "verifyCollectionFile";
-          break;
-
-        case "verifyCollectionFile":
-          // Verify if collection file exists
-          if (!fs.existsSync(collectionFilePath)) {
-            throw new Error("Collection file not found. Exiting.");
-          }
-          promptStep = "repoChoice";
-          break;
 
         case "repoChoice":
-          repoChoice = process.env.REPO_CHOICE ||
-          (await inquirer.prompt({
-            type: "list",
-            name: "repoChoice",
-            message: "Is it an existing or new GitHub repo?",
-            choices: ["existing", "new"],
-            default: "new",
-          }).then(({ repoChoice }) => repoChoice));
+          repoChoice =
+            process.env.REPO_CHOICE ||
+            (await inquirer
+              .prompt({
+                type: "list",
+                name: "repoChoice",
+                message: "Is it an existing or new GitHub repo?",
+                choices: ["existing", "new"],
+                default: "new",
+              })
+              .then(({ repoChoice }) => repoChoice));
 
           let repoFullName;
           if (repoChoice === "existing") {
@@ -233,12 +243,15 @@ async function main() {
               }
             }
           } else if (repoChoice === "new") {
-            repoNewName = process.env.REPO_NAME ||
-            (await inquirer.prompt({
-              type: "input",
-              name: "repoNewName",
-              message: "Enter the repository name:",
-            }).then(({ repoNewName }) => repoNewName));
+            repoNewName =
+              process.env.REPO_NAME ||
+              (await inquirer
+                .prompt({
+                  type: "input",
+                  name: "repoNewName",
+                  message: "Enter the repository name:",
+                })
+                .then(({ repoNewName }) => repoNewName));
             repoFullName = await createGithubRepo(githubToken, repoNewName);
             if (!repoFullName) {
               console.log("Failed to create the repository. Exiting.");
@@ -320,9 +333,8 @@ async function main() {
           } else {
             console.log("Failed to create GitHub Actions workflow.");
           }
-          promptStep = null
+          promptStep = null;
           break;
-
       }
     }
   } catch (error) {
