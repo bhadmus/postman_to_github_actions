@@ -30,8 +30,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
-          COLLECTION_SOURCE: "filepath"
-          COLLECTION_FILEPATH: "test-collection.json"
+          COLLECTION_SOURCE: "UID"
+          COLLECTION_ID: ${{ secrets.COLLECTION_ID }}
           ENVIRONMENT_REQUIRED: "false"
           REPO_CHOICE: "new"
           REPO_NAME: "my-new-repo"
