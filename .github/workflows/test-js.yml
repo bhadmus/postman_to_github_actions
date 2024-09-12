@@ -1,0 +1,52 @@
+name: Test Postman and Github Action Automatic Sync NPM Package
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd JS
+          npm install
+
+      - name: Run E2E pipeline script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+          COLLECTION_SOURCE: "filepath"
+          COLLECTION_FILEPATH: "test-collection.json"
+          ENVIRONMENT_REQUIRED: "false"
+          REPO_CHOICE: "new"
+          REPO_NAME: "my-new-repo"
+
+        run: node main.mjs
+
+      - name: Verify GitHub Actions YAML generated
+        run: |
+          if [ ! -f .github/workflows/postman-tests.yml ]; then
+            echo "GitHub Actions workflow YAML not found."
+            exit 1
+          else
+            echo "GitHub Actions workflow YAML found."
+          fi
+
+      - name: Verify Pipeline Execution
+        run: |
+          echo "E2E pipeline executed successfully!"
