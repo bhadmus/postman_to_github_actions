@@ -24,6 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd JS
+          ls
           npm install
 
       - name: Run E2E pipeline script
