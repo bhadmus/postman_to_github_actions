@@ -1,4 +1,4 @@
-name: Test Postman and Github Action Automatic Sync NPM Package
+name: Test Postman and Github Action Automatic Sync NPM Package and Delete Test
 
 on:
   push:
