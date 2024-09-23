@@ -1,2 +1,6 @@
 /__pycache__
 /python/__pycache__
+node_modules/
+JS/node_modules/
+.github/.DS_Store
+.DS_Store
