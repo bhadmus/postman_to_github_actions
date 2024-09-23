@@ -1,4 +1,4 @@
-name: Test Postman and Github Action Automatic Sync NPM Package
+name: Test Postman and Github Action Automatic Sync NPM Package and Delete Test
 
 on:
   push:
@@ -50,3 +50,13 @@ jobs:
       - name: Verify Pipeline Execution
         run: |
           echo "E2E pipeline executed successfully!"
+
+      - name: Delete the created GitHub repository
+        if: success() # This step will run only if the previous steps succeeded
+        run: |
+          REPO_NAME="my-new-repo-${{ github.run_id }}"
+          curl -X DELETE \
+          -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository_owner }}/$REPO_NAME
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
