@@ -138,7 +138,7 @@ export async function makeCommit(token, repoFullName, files, message) {
     try {
         const headers = {
             'Authorization': `token ${token}`,
-            'Accept': 'application/vnd.github.v3+json' // Correct header for GitHub API
+            'Accept': 'application/vnd.github.v3+json' 
         };
 
         const baseUrl = `https://api.github.com/repos/${repoFullName}/contents/`;
@@ -147,15 +147,14 @@ export async function makeCommit(token, repoFullName, files, message) {
 
         for (const file of files) {
             const content = fs.readFileSync(file, 'base64');
-            const repoFilePath = path.relative(process.cwd(), file).replace(/\\/g, '/'); // Ensure the file path is relative and uses forward slashes
-            
+            const repoFilePath = path.relative(process.cwd(), file).replace(/\\/g, '/'); 
             fileBlobs.push({
                 path: repoFilePath,
                 content
             });
         }
 
-        // Fetch the latest commit SHA for the branch
+        
         const refResponse = await fetch(`https://api.github.com/repos/${repoFullName}/git/ref/heads/${branch}`, { headers });
         const refData = await refResponse.json();
         if (!refResponse.ok) {
@@ -163,7 +162,7 @@ export async function makeCommit(token, repoFullName, files, message) {
         }
         const latestCommitSha = refData.object.sha;
 
-        // Fetch the tree SHA of the latest commit
+      
         const commitResponse = await fetch(`https://api.github.com/repos/${repoFullName}/git/commits/${latestCommitSha}`, { headers });
         const commitData = await commitResponse.json();
         if (!commitResponse.ok) {
